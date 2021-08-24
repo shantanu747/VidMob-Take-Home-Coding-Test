@@ -40,8 +40,7 @@ def perform_operation(num1, operation, num2):
         if(float(num2) == 0.0):
             print("Division by zero not allowed here!")
             return
-        result = str(float(num1) / float(num2))
-        return result
+        return str(float(num1) / float(num2))
     elif(operation == "+"):
         return str(float(num1) + float(num2))
     elif(operation == "-"):
