@@ -37,12 +37,11 @@ def perform_operation(num1, operation, num2):
     if(operation == "*"):
         return str(float(num1) * float(num2))
     elif(operation == "/"):
-        try:
-            result = str(float(num1) / float(num2))
-            return result
-        except ZeroDivisionError:
+        if(float(num2) == 0.0):
             print("Division by zero not allowed here!")
             return
+        result = str(float(num1) / float(num2))
+        return result
     elif(operation == "+"):
         return str(float(num1) + float(num2))
     elif(operation == "-"):
@@ -72,7 +71,7 @@ def setup_expression(inputString):
     # Check for any invalid chars in string or illegal repeating operators
     operators_in_series = 0 
     for char in inputString:
-        if (char not in valid_chars):
+        if(char not in valid_chars):
             print("Invalid Input")
             print("Expression can only contain symbols for math operators(*, /, +, -) and numbers (0-9)")
             return
@@ -107,6 +106,8 @@ def setup_expression(inputString):
             else:
                 #dangling decimal, can safely ignore it
                 del expression_list[index + 1]
+        
+        #Negative number support - needs additional debugging
         elif(expression_list[index] == '-'):
             if(index == 0 and (expression_list[index+1] == '.' or is_a_num(expression_list[index+1]))):
                 #first number is negative - merge with next char
