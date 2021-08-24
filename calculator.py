@@ -1,5 +1,5 @@
 '''
-Author: Shantanu Patil
+@Author: Shantanu Patil
 VidMob Take-Home Exam
 '''
 
@@ -31,7 +31,7 @@ num2 [str] - the second number
 operation [str] - operations to perform
 
 @Returns
-string representation of result to be added to expression stack again 
+string representation of result to be added to expression list again 
 '''
 def perform_operation(num1, operation, num2):
     if(operation == "*"):
@@ -62,6 +62,7 @@ inputString [str]: expression provided by user
 expression_list [List[str]]
 '''
 def setup_expression(inputString):
+    #Used for pattern matching of string chars
     valid_chars = '0123456789().*/+-'
     operators = '*/+-'
     neg_number_prefixes = ['-.', '-0.']
@@ -77,7 +78,7 @@ def setup_expression(inputString):
         if(char in operators):
             operators_in_series += 1
             if((operators_in_series == 2 and char != '-') or (operators_in_series > 2)):
-                print("Syntax Error")
+                print("Syntax Error - cannot have more than 2 operators in a row and second operator must be \'-\'")
                 return
         elif(operators_in_series > 0):
             #reset it back to 0 if operator series has been broken
@@ -89,15 +90,15 @@ def setup_expression(inputString):
     index = 0
     #Combines individual digits into actual numbers 
     while(index < (len(expression_list) - 1)):
-        if is_a_num(expression_list[index]) and expression_list[index + 1] == "(":
+        if(is_a_num(expression_list[index]) and expression_list[index + 1] == "("):
             #The program does not support implicit multiplication - need operator between number and parentheses
             print("Invalid Input")
             print ("Expression cannot have parentheses directly after number - must be operator in between")
             return
-        if is_a_num(expression_list[index]) and is_a_num(expression_list[index + 1]):
+        if(is_a_num(expression_list[index]) and is_a_num(expression_list[index + 1])):
             expression_list[index] += expression_list[index + 1]
             del expression_list[index + 1]
-        elif is_a_num(expression_list[index]) and expression_list[index + 1] == ".":
+        elif(is_a_num(expression_list[index]) and expression_list[index + 1] == "."):
             if is_a_num(expression_list[index + 2]):
                 expression_list[index] += expression_list[index + 1] + expression_list[index + 2]
                 del expression_list[index + 2]
@@ -106,7 +107,7 @@ def setup_expression(inputString):
                 #dangling decimal, can safely ignore it
                 del expression_list[index + 1]
         
-        #Negative number support - needs additional debugging
+        #Handles negative integers and negative decimals
         elif(expression_list[index] == '-'):
             if(index == 0 and (expression_list[index+1] == '.' or is_a_num(expression_list[index+1]))):
                 #first number is negative - merge with next char
@@ -116,9 +117,14 @@ def setup_expression(inputString):
                 #confirm this is a second '-' char and thus this is part of another negative number and not meant as subtraction operator
                 expression_list[index] += expression_list[index + 1]
                 del expression_list[index + 1]
+            else:
+                #This fixes the issue of negative numbers not working
+                expression_list.insert(index, '+')
+                index += 1
         elif(expression_list[index] in neg_number_prefixes and is_a_num(expression_list[index+1])):
             expression_list[index] += expression_list[index + 1]
             del expression_list[index + 1]
+        #Handle decimals
         elif(expression_list[index] == '.' and is_a_num(expression_list[index+1])):
             expression_list[index] += expression_list[index + 1]
             del expression_list[index + 1]
@@ -136,19 +142,47 @@ def evaluate_expression(command_line_expression):
     expression = setup_expression(command_line_expression)
     if(not expression):
         return
+    if(expression[0] == '(' and expression[-1] == ')'):
+        del expression[-1]
+        del expression[0]
     Parentheses = '()'
+
+    parentheses_solved = False
+
     #If the length of the list is 1, there is only 1 number, meaning an answer has been reached.
     while len(expression) != 1:
         #If single number inside parentheses then no operations needed, strip parentheses
         #Assumption: operations inside parentheses have already been evaluated in a previous pass
-        index = 0
-        while(index < len(expression)-1):
-            if(expression[index] == "("):
-                if(expression[index + 2] == ")"):
+        while(not parentheses_solved):
+            index = 0
+            if('(' not in expression and ')' not in expression):
+                parentheses_solved = True
+                break
+            while(index < len(expression)-1):
+                if(expression[index] == "(" and expression[index+2] == ")"):
                     del expression[index + 2]
                     del expression[index]
-            else:
-                index += 1
+                else:
+                    index += 1
+            index = 0
+            while(index < len(expression) - 1):
+                if(expression[index] in "*/" and not (expression[index+1] in Parentheses or expression[index-1] in Parentheses)):
+                    expression[index - 1] = perform_operation(expression[index - 1], expression[index], expression[index + 1])
+                    del expression[index + 1]
+                    del expression[index]
+                    index = 0
+                else:
+                    index += 1
+            #Handle add/subtract ops next
+            index = 0
+            while(index < len(expression) - 1):
+                if(expression[index] in "+-" and not (expression[index+1] in Parentheses or expression[index-1] in Parentheses)):
+                    expression[index - 1] = perform_operation(expression[index - 1], expression[index], expression[index + 1])
+                    del expression[index + 1]
+                    del expression[index]
+                    index = 0
+                else:
+                    index += 1
         #Handle multiply/divide ops next
         index = 0
         while(index < len(expression) - 1):
@@ -156,6 +190,7 @@ def evaluate_expression(command_line_expression):
                 expression[index - 1] = perform_operation(expression[index - 1], expression[index], expression[index + 1])
                 del expression[index + 1]
                 del expression[index]
+                index = 0
             else:
                 index += 1
         #Handle add/subtract ops next
@@ -165,6 +200,7 @@ def evaluate_expression(command_line_expression):
                 expression[index - 1] = perform_operation(expression[index - 1], expression[index], expression[index + 1])
                 del expression[index + 1]
                 del expression[index]
+                index = 0
             else:
                 index += 1
     return (float(expression[0]))
@@ -196,21 +232,17 @@ def main():
         elif(userInput[0].lower() == "done"):
             wrong_counter = 0 #set this counter back to 0 if it wasn't already
             print("Done command received - exiting the program\n")
-            return
-        #
+            return 0
         else:
-            #Print descriptive error message for user in case they made a typo
             wrong_counter += 1
             if(wrong_counter == 3):
                 print("Too many invalid commands - exiting program.")
                 return 1
+            #Print descriptive error message for user in case they made a typo
             print("Invalid command! Use \"calculate\" command with valid math expression to evaluate, or \"Done\" to close program.\n")
-    return 0
     
 
 if __name__ == "__main__":
-    #TODO: Adding negative number support broke the eval function in ways that other expressions that used to work don't work
-    #Figure out how adding negative number support a. didn't work perfectly and b. affected other valid expressions
-    #Fix it
+    #TODO: Nested parentheses need work - PEMDAS doesn't work as intended when nesting is involved
     main()
 

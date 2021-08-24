@@ -11,7 +11,7 @@ Example: "calculate 2+2" or "calculate 1 + 2"
 
 Note: "calculate" and "done" commands are not case sensitive so don't worry about that - just make sure there is a space between the "calculate" command and the expression
 
-If an invalid command is given more than 3 times the program auto-exits
+If an invalid command is given more than 3 times the program auto-exits and lets user know why program auto-exited
 
 
 COMMAND TO RUN PROGRAM:

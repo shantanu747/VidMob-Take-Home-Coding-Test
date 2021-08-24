@@ -30,12 +30,13 @@ class TestCalculator(unittest.TestCase):
         self.assertAlmostEqual(evaluate_expression("1+2"), 3.0)
         self.assertAlmostEqual(evaluate_expression("4*5/2"), 10.0)
         self.assertAlmostEqual(evaluate_expression("-.32/.5"), -0.64)
+        self.assertAlmostEqual(evaluate_expression("(4-2)*3.5"), 7.0)
+        self.assertAlmostEqual(evaluate_expression("-4*5"), -20.0)
 
         #These examples fail
         #TODO: Figure out why these particular cases doesn't work and fix it
-        #self.assertAlmostEqual(evaluate_expression("-5+-8--11*2"), 9.0)
-        #self.assertAlmostEqual(evaluate_expression("(4-2)*3.5"), 7.0)
-        #self.assertAlmostEqual(evaluate_expression("((3+3)*4-2)"), 22.0)
+        #self.assertEquals(evaluate_expression("-5+-8--11*2"), 9.0)
+        
         
         
 
